@@ -30,17 +30,17 @@ class AWSInMemoryCredentialProvider: NSObject, AWSCredentialsProvider {
     private(set) var expiration: NSDate
 
     init(accessKey: NSString, secretKey: NSString, sessionKey: String, expiration: NSDate) {
-        self.accessKey = accessKey;
-        self.secretKey = secretKey;
+        self.accessKey = accessKey as String;
+        self.secretKey = secretKey as String;
         self.sessionKey = sessionKey;
         self.expiration = expiration;
     }
 
     convenience init(credentials: [NSString: AnyObject!]) {
-        let accessKey = credentials["AccessKeyId"] as String
-        let secretKey = credentials["SecretAccessKey"] as String
-        let sessionKey = credentials["SessionToken"] as String
-        let expirationISO = credentials["Expiration"] as String
+        let accessKey = credentials["AccessKeyId"] as! String
+        let secretKey = credentials["SecretAccessKey"] as! String
+        let sessionKey = credentials["SessionToken"] as! String
+        let expirationISO = credentials["Expiration"] as! String
         let expiration = ISO8601DateFormatter().dateFromString(expirationISO)
         self.init(accessKey: accessKey, secretKey: secretKey, sessionKey: sessionKey, expiration: expiration)
     }

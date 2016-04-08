@@ -4,6 +4,6 @@
 
 #import <Lock/Lock.h>
 #import <SimpleKeychain/A0SimpleKeychain.h>
-#import <AWSiOSSDKv2/S3.h>
-#import <AWSiOSSDKv2/AWSCore.h>
+#import <AWSS3/AWSS3.h>
+#import <AWSCore/AWSCore.h>
 #import <ISO8601DateFormatter/ISO8601DateFormatter.h>

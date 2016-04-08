@@ -6,4 +6,5 @@ target 'AWS' do
   pod 'Lock', '~> 1.10'
   pod 'SimpleKeychain', '~> 0.3'
   pod 'AWSiOSSDKv2', '~> 2.0'
+  pod 'ISO8601DateFormatter'
 end

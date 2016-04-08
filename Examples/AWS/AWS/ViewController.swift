@@ -55,33 +55,33 @@ class ViewController: UIViewController {
     }
 
     @IBAction func fetchFromFirebase(sender: AnyObject) {
-        let button = sender as UIButton
+        let button = sender as! UIButton
         self.setInProgress(true, button: button)
 
-        let client = A0APIClient.sharedClient()
+        let client = A0Lock.sharedLock().apiClient()
         let jwt = A0SimpleKeychain().stringForKey("id_token")
         let parameters = A0AuthParameters.newWithDictionary([
             A0ParameterAPIType: "aws",
-            "id_token": jwt,
+            "id_token": jwt!,
             "role": RoleARN,
             "principal": PrincipalARN,
             ])
 
         client.fetchDelegationTokenWithParameters(parameters,
             success: { (response) -> Void in
-                let payload = response as Dictionary<String, AnyObject>
-                let credentials = payload["Credentials"] as Dictionary<String, AnyObject>
-                let accessKey = credentials["AccessKeyId"] as String
+                let payload = response as! Dictionary<String, AnyObject>
+                let credentials = payload["Credentials"] as! Dictionary<String, AnyObject>
+                let accessKey = credentials["AccessKeyId"] as! String
                 self.seconStepLabel.text = "AWS Creds with AccessKey \(accessKey)"
-                println("Obtained AWS Credentials \(credentials)")
+                print("Obtained AWS Credentials \(credentials)")
                 let credentialsProvider = AWSInMemoryCredentialProvider(credentials: credentials)
                 let serviceConfiguration = AWSServiceConfiguration(region: .USEast1, credentialsProvider: credentialsProvider)
-                AWSServiceManager.defaultServiceManager().setDefaultServiceConfiguration(serviceConfiguration)
+                AWSServiceManager.defaultServiceManager().defaultServiceConfiguration = serviceConfiguration
                 self.downloadFromS3({self.setInProgress(false, button: button)})
             },
             failure: { (error) -> Void in
                 self.seconStepLabel.text = error.localizedDescription
-                println("An error ocurred \(error)")
+                print("An error ocurred \(error)")
                 self.setInProgress(false, button: button)
         })
     }
@@ -102,17 +102,17 @@ class ViewController: UIViewController {
     func showLogin() {
         let lock = A0LockViewController()
         lock.closable = false
-        lock.onAuthenticationBlock = {(profile: A0UserProfile!, token: A0Token!) -> () in
-            A0SimpleKeychain().setString(token.idToken, forKey: "id_token")
+        lock.onAuthenticationBlock = {(profile: A0UserProfile?, token: A0Token?) -> () in
+            A0SimpleKeychain().setString(token!.idToken, forKey: "id_token")
             self.dismissViewControllerAnimated(true, completion: nil)
-            self.firstStepLabel.text = "Auth0 JWT \(token.idToken)"
+            self.firstStepLabel.text = "Auth0 JWT \(token!.idToken)"
             return;
         }
         self.presentViewController(lock, animated: true, completion: nil)
     }
 
     func downloadFromS3(completion: () -> ()) {
-        let localPath = NSTemporaryDirectory() .stringByAppendingPathComponent("greeting.jsons")
+        let localPath = (NSTemporaryDirectory() as NSString) .stringByAppendingPathComponent("greeting.jsons")
         let downloadURL = NSURL(fileURLWithPath: localPath)
         let downloadRequest = AWSS3TransferManagerDownloadRequest()
         downloadRequest.bucket = BucketName
@@ -121,12 +121,12 @@ class ViewController: UIViewController {
         let transferManager = AWSS3TransferManager.defaultS3TransferManager()
         transferManager.download(downloadRequest).continueWithBlock { (task) -> AnyObject! in
             if task.error != nil {
-                println("Failed to download S3 with error \(task.error)")
+                print("Failed to download S3 with error \(task.error)")
                 self.thirdStepLabel.text = "Failed to download from S3 with error \(task.error)"
             }
 
             if task.result != nil {
-                let output = task.result as AWSS3TransferManagerDownloadOutput
+                let output = task.result as! AWSS3TransferManagerDownloadOutput
                 self.thirdStepLabel.text = "Downloaded file \(downloadRequest.key) with size \(output.contentLength)"
             }
 
